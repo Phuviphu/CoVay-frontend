@@ -1,0 +1,75 @@
+/* Đổi sang font Montserrat siêu đẹp */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
+:root {
+  --bg-gradient: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  --glass: rgba(255, 255, 255, 0.2);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+  --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --text-color: #fff;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* Áp dụng font mới toàn game */
+  font-family: 'Montserrat', sans-serif; 
+  color: white;
+  background: linear-gradient(-45deg, #1e3c72, #2a5298, #0f2027, #447485);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: var(--glass-border);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: var(--shadow);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7); /* Tối hơn xíu để nổi bật */
+  backdrop-filter: blur(8px);
+  display: flex; justify-content: center; alignItems: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  background: white; color: #333;
+  padding: 40px; border-radius: 24px;
+  min-width: 320px; text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+button {
+  border: none; padding: 12px 24px; border-radius: 12px;
+  font-weight: 700; cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  font-family: 'Montserrat', sans-serif;
+}
+button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+button:active { transform: translateY(0); }
+
+/* Rank Colors */
+.rank-Iron { color: #cfd8dc; font-weight: 800; }
+.rank-Bronze { color: #ffab91; font-weight: 800; }
+.rank-Silver { color: #e0e0e0; font-weight: 800; }
+.rank-Gold { color: #ffd700; font-weight: 800; }
+.rank-Platinum { color: #00e5ff; text-shadow: 0 0 10px #00e5ff; font-weight: 800; }
