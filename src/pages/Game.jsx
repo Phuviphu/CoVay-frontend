@@ -7,13 +7,8 @@ const COLS = "ABCDEFGHJKLMNOPQRST";
 
 // --- CẤU HÌNH THỜI GIAN (Giây) ---
 const TIME_CONFIG = {
-    // ⚡️ BÀN 9x9: 10 giây suy nghĩ (Siêu tốc), Tổng 5 phút
     9:  { turn: 10, total: 300 },   
-    
-    // 🐢 BÀN 13x13: 30 giây suy nghĩ, Tổng 15 phút
     13: { turn: 30, total: 900 },  
-    
-    // 🧠 BÀN 19x19: 60 giây suy nghĩ, Tổng 45 phút
     19: { turn: 60, total: 2700 }   
 };
 
@@ -62,16 +57,14 @@ const Game = () => {
     if (!gameId || gameOver || (mode === 'online' && !gameId)) return;
 
     const timer = setInterval(() => {
-        // 1. Trừ thời gian nước đi hiện tại
         setTurnTime(prev => {
             if (prev <= 1) {
-                handleTimeout(); // HẾT GIỜ NƯỚC ĐI
+                handleTimeout(); 
                 return 0;
             }
             return prev - 1;
         });
 
-        // 2. Trừ tổng thời gian của người đang đi
         if (turn === 1) {
             setBlackTime(prev => {
                 if (prev <= 0) { handleTimeout(); return 0; }
@@ -88,7 +81,6 @@ const Game = () => {
     return () => clearInterval(timer);
   }, [turn, gameId, gameOver, mode]);
 
-  // HÀM XỬ LÝ KHI HẾT GIỜ -> THUA LUÔN
   const handleTimeout = async () => {
       if (gameOver) return;
       
@@ -158,7 +150,7 @@ const Game = () => {
                 setTimeout(() => triggerAI(), 600); 
             } else {
                 setTurn(turn===1?2:1);
-                setTurnTime(TIME_CONFIG[size].turn); // Reset thời gian suy nghĩ
+                setTurnTime(TIME_CONFIG[size].turn); 
                 setStatus(`Lượt của quân ${turn===1?'Trắng ⚪':'Đen ⚫'}`);
             }
         } catch(e) { 
@@ -168,7 +160,7 @@ const Game = () => {
         ws.current.send(JSON.stringify({type:'move', game_id:gameId, row:r, col:c, player:myColor}));
         const newGrid = [...grid]; newGrid[r][c] = myColor; setGrid(newGrid);
         setLastMove({row:r, col:c}); setTurn(myColor===1?2:1); addLog(myColor, r, c);
-        setTurnTime(TIME_CONFIG[size].turn); // Reset timer của mình
+        setTurnTime(TIME_CONFIG[size].turn); 
         setStatus("Đợi đối thủ...");
     }
   };
@@ -253,10 +245,15 @@ const Game = () => {
           info.score = { black: winner===1?'Thắng':'Thua', white: winner===2?'Thắng':'Thua' };
       }
 
+      // Gán winner_color vào info để hiển thị thông báo
+      info.winner_color = winner;
+
       if(localStorage.getItem('username')) {
           try {
+            // [FIX] Gửi thêm player_color: myColor để server biết ai là ai
             const res = await api.post(`/users/${localStorage.getItem('username')}/finish`, {
                 winner_color: winner,
+                player_color: myColor, 
                 difficulty: mode==='online'?'online':difficulty,
                 opponent_elo: 1000 
             });
@@ -273,8 +270,12 @@ const Game = () => {
         const u = localStorage.getItem('username');
         if (u) {
             const winner = myColor === 1 ? 2 : 1; 
+            // [FIX] Gửi thêm player_color: myColor
             await api.post(`/users/${u}/finish`, {
-                winner_color: winner, difficulty: mode === 'online' ? 'online' : difficulty, opponent_elo: 1000 
+                winner_color: winner, 
+                player_color: myColor,
+                difficulty: mode === 'online' ? 'online' : difficulty, 
+                opponent_elo: 1000 
             });
         }
         if (ws.current) ws.current.close(); 
@@ -311,7 +312,7 @@ const Game = () => {
              <div style={{display:'flex', alignItems:'center', gap:'10px', opacity: turn===1?1:0.5}}>
                  <div style={{width:30, height:30, borderRadius:'50%', background:'black', border:'2px solid white'}}></div>
                  <div>
-                    <div style={{fontWeight:'bold', color:'white'}}>ĐEN (Bạn)</div>
+                    <div style={{fontWeight:'bold', color:'white'}}>ĐEN {myColor===1 && "(Bạn)"}</div>
                     <div style={{fontFamily:'monospace', fontSize:'1.2rem', color: turn===1?'#4CAF50':'#ccc'}}>
                         {fmtTime(blackTime)}
                     </div>
@@ -334,7 +335,7 @@ const Game = () => {
              {/* TRẮNG */}
              <div style={{display:'flex', alignItems:'center', gap:'10px', opacity: turn===2?1:0.5}}>
                  <div style={{textAlign:'right'}}>
-                    <div style={{fontWeight:'bold', color:'white'}}>TRẮNG</div>
+                    <div style={{fontWeight:'bold', color:'white'}}>TRẮNG {myColor===2 && "(Bạn)"}</div>
                     <div style={{fontFamily:'monospace', fontSize:'1.2rem', color: turn===2?'#4CAF50':'#ccc'}}>
                         {fmtTime(whiteTime)}
                     </div>
@@ -373,13 +374,9 @@ const Game = () => {
                  <div className="modal-content">
                      {gameOver.isTimeout && <h3 style={{color:'#FF9800', margin:0}}>⏰ HẾT GIỜ!</h3>}
                      
-                     <h1 style={{color: (gameOver.winner_color === 1 && myColor === 1) || (gameOver.winner_color === 2 && myColor === 2) ? '#4CAF50' : '#F44336', margin:'10px 0', fontSize:'2.5rem'}}>
-                        {(() => {
-                            if (gameOver.isTimeout) {
-                                return (gameOver.winner_color === myColor) ? "🎉 BẠN THẮNG!" : "💀 BẠN THUA";
-                            }
-                            return gameOver.score.black > gameOver.score.white ? "🎉 ĐEN THẮNG!" : "🎉 TRẮNG THẮNG!";
-                        })()}
+                     <h1 style={{color: (gameOver.winner_color === myColor) ? '#4CAF50' : '#F44336', margin:'10px 0', fontSize:'2.5rem'}}>
+                        {/* Logic hiển thị thắng thua CHÍNH XÁC */}
+                        {(gameOver.winner_color === myColor) ? "🎉 BẠN THẮNG!" : "💀 BẠN THUA"}
                      </h1>
 
                      {gameOver.msg && <p style={{color:'#ccc'}}>{gameOver.msg}</p>}
